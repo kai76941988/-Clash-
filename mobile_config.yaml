@@ -1,0 +1,216 @@
+# Clash Meta 手机端配置 - 修复版
+# 生成时间: 2026-04-01 15:25
+# 问题修复: 确保所有流量强制走代理
+# 来源: ip_1.bat ~ ip_6.bat 整合节点
+
+secret: github.com/Alvin9999-newpac/fanqiang
+mixed-port: 7890
+allow-lan: false
+bind-address: "*"
+mode: global
+log-level: warning
+ipv6: false
+external-controller: 127.0.0.1:9090
+geodata-mode: false
+
+# DNS 设置 - 强制使用代理DNS
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+  default-nameserver:
+    - 8.8.8.8
+    - 8.8.4.4
+  nameserver:
+    - 8.8.8.8
+    - 1.1.1.1
+  fallback:
+    - 8.8.8.8
+    - 1.1.1.1
+  fallback-filter:
+    geoip: false
+    ipcidr: []
+
+# ============== 代理节点 ==============
+proxies:
+  # 节点1 - TUIC (ip_1.bat) - 主节点
+  - name: "🇺🇸 TUIC-1"
+    server: ip1.758733.xyz
+    port: 10088
+    type: tuic
+    uuid: 9bbd1f42-7ae7-4239-bd10-a68de95e3295
+    password: dongtaiwang.com
+    sni: apple.com
+    alpn:
+      - h3
+    request-timeout: 8000
+    udp-relay-mode: native
+    skip-cert-verify: true
+    congestion-controller: bbr
+
+  # 节点2 - TUIC (ip_2.bat)
+  - name: "🇫🇷 TUIC-2"
+    server: 163.172.116.154
+    port: 33887
+    type: tuic
+    uuid: 9adb384a-0f16-4501-a8f3-b6b2556fce87
+    password: dongtaiwang.com
+    sni: bing.com
+    alpn:
+      - h3
+    request-timeout: 8000
+    udp-relay-mode: native
+    skip-cert-verify: true
+    congestion-controller: bbr
+
+  # 节点3 - TUIC (ip_4.bat)
+  - name: "🇺🇸 TUIC-4"
+    server: 157.254.223.48
+    port: 11540
+    type: tuic
+    uuid: 6845cb43-4b8d-49e8-a011-1051d6c4d2ae
+    password: 6845cb43-4b8d-49e8-a011-1051d6c4d2ae
+    sni: www.microsoft.com
+    alpn:
+      - h3
+    request-timeout: 8000
+    udp-relay-mode: native
+    skip-cert-verify: true
+    congestion-controller: bbr
+
+  # 节点4 - Hysteria IPv6 (ip_5.bat)
+  - name: "🌍 Hysteria-IPv6"
+    server: 2a14:7584:d097::a
+    port: 54177
+    type: hysteria
+    auth-str: dongtaiwang.com
+    sni: apple.com
+    skip-cert-verify: true
+    alpn:
+      - h3
+    protocol: udp
+    up: "11 Mbps"
+    down: "55 Mbps"
+
+# ============== 代理组 ==============
+proxy-groups:
+  - name: 🚀 节点选择
+    type: select
+    proxies:
+      - ♻️ 自动选择
+      - 🇺🇸 TUIC-1
+      - 🇫🇷 TUIC-2
+      - 🇺🇸 TUIC-4
+      - 🌍 Hysteria-IPv6
+
+  - name: ♻️ 自动选择
+    type: url-test
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    proxies:
+      - 🇺🇸 TUIC-1
+      - 🇫🇷 TUIC-2
+      - 🇺🇸 TUIC-4
+      - 🌍 Hysteria-IPv6
+
+  - name: 🌍 国外媒体
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+
+  - name: 📲 电报信息
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+
+  - name: 🎯 全球直连
+    type: select
+    proxies:
+      - DIRECT
+
+  - name: 🛑 全球拦截
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+
+  - name: 🐟 漏网之鱼
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+
+# ============== 分流规则 ==============
+# 重要: 使用 GLOBAL 模式时，所有规则都会被忽略
+# 所有流量都会走 "🚀 节点选择" 代理组
+rules:
+  # IP查询网站 - 强制走代理（确保查到国外IP）
+  - DOMAIN-SUFFIX,ip.sb,🚀 节点选择
+  - DOMAIN-SUFFIX,ipinfo.io,🚀 节点选择
+  - DOMAIN-SUFFIX,ip-api.com,🚀 节点选择
+  - DOMAIN-SUFFIX,ifconfig.me,🚀 节点选择
+  - DOMAIN-SUFFIX,ipleak.net,🚀 节点选择
+  - DOMAIN-SUFFIX,whatismyip.com,🚀 节点选择
+  - DOMAIN-SUFFIX,myip.com,🚀 节点选择
+  - DOMAIN-SUFFIX,ip2location.com,🚀 节点选择
+  - DOMAIN-SUFFIX,ipgeolocation.io,🚀 节点选择
+  - DOMAIN-SUFFIX,ipdata.co,🚀 节点选择
+  - DOMAIN-SUFFIX,db-ip.com,🚀 节点选择
+  - DOMAIN-SUFFIX,ipinfo.com,🚀 节点选择
+  - DOMAIN-SUFFIX,ipwhois.io,🚀 节点选择
+  - DOMAIN-SUFFIX,bigdatacloud.com,🚀 节点选择
+  - DOMAIN-SUFFIX,ipapi.co,🚀 节点选择
+
+  # Google
+  - DOMAIN-SUFFIX,google.com,🚀 节点选择
+  - DOMAIN-SUFFIX,googleapis.com,🚀 节点选择
+  - DOMAIN-SUFFIX,gstatic.com,🚀 节点选择
+
+  # 社交媒体
+  - DOMAIN-SUFFIX,twitter.com,🚀 节点选择
+  - DOMAIN-SUFFIX,facebook.com,🚀 节点选择
+  - DOMAIN-SUFFIX,instagram.com,🚀 节点选择
+  - DOMAIN-SUFFIX,youtube.com,🚀 节点选择
+  - DOMAIN-SUFFIX,reddit.com,🚀 节点选择
+  - DOMAIN-SUFFIX,tiktok.com,🚀 节点选择
+
+  # 电报
+  - DOMAIN-SUFFIX,t.me,🚀 节点选择
+  - DOMAIN-SUFFIX,telegram.me,🚀 节点选择
+  - DOMAIN-SUFFIX,telegram.org,🚀 节点选择
+
+  # GitHub
+  - DOMAIN-SUFFIX,github.com,🚀 节点选择
+  - DOMAIN-SUFFIX,githubusercontent.com,🚀 节点选择
+
+  # 国内网站 - 直连
+  - DOMAIN-SUFFIX,cn,🎯 全球直连
+  - DOMAIN-KEYWORD,-cn,🎯 全球直连
+  - DOMAIN-SUFFIX,baidu.com,🎯 全球直连
+  - DOMAIN-SUFFIX,qq.com,🎯 全球直连
+  - DOMAIN-SUFFIX,taobao.com,🎯 全球直连
+  - DOMAIN-SUFFIX,tmall.com,🎯 全球直连
+  - DOMAIN-SUFFIX,jd.com,🎯 全球直连
+  - DOMAIN-SUFFIX,bilibili.com,🎯 全球直连
+  - DOMAIN-SUFFIX,163.com,🎯 全球直连
+  - DOMAIN-SUFFIX,126.com,🎯 全球直连
+  - DOMAIN-SUFFIX,alipay.com,🎯 全球直连
+  - DOMAIN-SUFFIX,aliyun.com,🎯 全球直连
+  - DOMAIN-SUFFIX,tencent.com,🎯 全球直连
+  - DOMAIN-SUFFIX,weixin.com,🎯 全球直连
+  - DOMAIN-SUFFIX,weibo.com,🎯 全球直连
+
+  # 局域网 - 直连
+  - IP-CIDR,192.168.0.0/16,🎯 全球直连,no-resolve
+  - IP-CIDR,10.0.0.0/8,🎯 全球直连,no-resolve
+  - IP-CIDR,172.16.0.0/12,🎯 全球直连,no-resolve
+
+  # 默认 - 走代理
+  - MATCH,🚀 节点选择
